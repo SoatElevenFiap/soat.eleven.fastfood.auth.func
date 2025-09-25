@@ -48,7 +48,7 @@ public class JwtTokenService(IConfiguration configuration) : IJwtTokenService
     private string GenerateToken(IEnumerable<Claim> claims)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
-        var key = Encoding.ASCII.GetBytes(_configuration["SecretKeyPassword"]!);
+        var key = Encoding.ASCII.GetBytes(_configuration["SECRET_KEY_PASSWORK"]!);
         var expirationDate = DateTime.UtcNow.AddHours(2);
 
         var tokenDescriptor = new SecurityTokenDescriptor

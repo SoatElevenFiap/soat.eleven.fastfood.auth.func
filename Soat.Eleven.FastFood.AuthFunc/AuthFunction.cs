@@ -1,10 +1,13 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Soat.Eleven.FastFood.Domain.Repositories;
 using Soat.Eleven.FastFood.Domain.Services;
 using System.IO;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -12,11 +15,13 @@ namespace Soat.Eleven.FastFood.AuthFunc
 {
     public class AuthFunction(ILogger<AuthFunction> logger,
                               IUsuarioRepostiory usuarioRepostiory,
-                              IJwtTokenService jwtTokenService)
+                              IJwtTokenService jwtTokenService,
+                              IConfiguration configuration)
     {
         private readonly ILogger<AuthFunction> _logger = logger;
         private readonly IUsuarioRepostiory _usuarioRepostiory = usuarioRepostiory;
         private readonly IJwtTokenService _jwtTokenService = jwtTokenService;
+        private readonly IConfiguration _configuration = configuration;
 
         [Function("auth")]
         public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequest req)
@@ -53,7 +58,7 @@ namespace Soat.Eleven.FastFood.AuthFunc
             }
 
             // Tenta fazer login com as credenciais
-            var usuario = await _usuarioRepostiory.LoginAsync(email, password);
+            var usuario = await _usuarioRepostiory.LoginAsync(email, GeneratePassword(password));
 
             // Verifica se o usuário foi encontrado
             if (usuario is null)
@@ -66,6 +71,14 @@ namespace Soat.Eleven.FastFood.AuthFunc
             _logger.LogInformation("Usuário autenticado com sucesso: {nome}", usuario!.Nome);
             var token = _jwtTokenService.GenerateToken(usuario);
             return new OkObjectResult(token);
+        }
+
+        private string GeneratePassword(string password)
+        {
+            var saltByte = Encoding.UTF8.GetBytes(_configuration["SALT_KEY_PASSWORK"]);
+            var hmacMD5 = new HMACMD5(saltByte);
+            var passwordConvert = Encoding.UTF8.GetBytes(password!);
+            return Convert.ToBase64String(hmacMD5.ComputeHash(passwordConvert));
         }
 
         private class LoginRequest
