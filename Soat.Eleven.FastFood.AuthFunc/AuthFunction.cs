@@ -11,6 +11,7 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Soat.Eleven.FastFood.AuthFunc;
@@ -65,7 +66,7 @@ public class AuthFunction(ILogger<AuthFunction> logger,
             }
 
             // Tenta fazer login com as credenciais
-            var usuario = await _usuarioRepository.LoginAsync(email, GeneratePassword(password));
+            var usuario = await _usuarioRepository.LoginAsync(email, Common.GeneratePassword(password, _configuration["SALT_KEY_PASSWORK"]!));
 
             // Verifica se o usuário foi encontrado
             if (usuario is null)
@@ -92,23 +93,26 @@ public class AuthFunction(ILogger<AuthFunction> logger,
         try
         {
             _logger.LogInformation("Iniciando autenticação para atendimento. CPF: {cpf}", cpf ?? "não informado");
-            
+
             if (!string.IsNullOrEmpty(cpf))
             {
+                // Limpa o CPF, removendo pontos e traços
+                cpf = Common.CleanCpf(cpf);
+
+                // Valida o formato e o cálculo do CPF
+                if (!Common.IsCpfValido(cpf))
+                {
+                    _logger.LogWarning("CPF inválido fornecido: {cpf}", cpf);
+                    return new BadRequestObjectResult("CPF inválido");
+                }
+
                 var cliente = await _usuarioRepository.GetClienteByCPF(cpf);
                 var tokenAtendimento = await _tokenAtendimentoRepository.GenerateTokenAsync(cliente, cpf);
                 
-                if (tokenAtendimento is not null)
-                {
-                    _logger.LogInformation("Cliente encontrado pelo CPF: {cpf}", cpf);
+                _logger.LogInformation("Cliente encontrado pelo CPF: {cpf}", cpf);
                     
-                    var token = _jwtTokenService.GenerateToken(tokenAtendimento.TokenId.ToString());
-                    return new OkObjectResult(token);
-                }
-                else
-                {
-                    _logger.LogInformation("Cliente com CPF {cpf} não encontrado, gerando token anônimo", cpf);
-                }
+                var token = _jwtTokenService.GenerateToken(tokenAtendimento.TokenId.ToString());
+                return new OkObjectResult(token);
             }
             
             // Se chegou aqui, não tem CPF ou não encontrou o cliente
@@ -124,14 +128,6 @@ public class AuthFunction(ILogger<AuthFunction> logger,
             _logger.LogError(ex, "Erro ao processar a requisição de atendimento.");
             throw;
         }
-    }
-
-    private string GeneratePassword(string password)
-    {
-        var saltByte = Encoding.UTF8.GetBytes(_configuration["SALT_KEY_PASSWORK"]!);
-        var hmacMD5 = new HMACMD5(saltByte);
-        var passwordConvert = Encoding.UTF8.GetBytes(password!);
-        return Convert.ToBase64String(hmacMD5.ComputeHash(passwordConvert));
     }
 }
 
