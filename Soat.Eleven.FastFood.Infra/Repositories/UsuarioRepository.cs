@@ -10,6 +10,29 @@ public class UsuarioRepository(DataContext context) : IUsuarioRepostiory
 {
     private readonly DataContext _context = context;
 
+    public async Task<Cliente?> GetClienteByCPF(string cpf)
+    {
+        string query = @"
+            SELECT *
+            FROM ""Clientes""
+            WHERE ""Cpf"" = @cpf";
+
+        var parameters = new { cpf };
+
+        try
+        {
+            return await _context.Connection.QueryFirstOrDefaultAsync<Cliente>(query, parameters);
+        }
+        catch (Exception ex)
+        {
+            throw new SqlTypeException(ex.Message);
+        }
+        finally
+        {
+            _context.DisposeConnection();
+        }
+    }
+
     public async Task<Usuario?> LoginAsync(string email, string password)
     {
         string query = @"

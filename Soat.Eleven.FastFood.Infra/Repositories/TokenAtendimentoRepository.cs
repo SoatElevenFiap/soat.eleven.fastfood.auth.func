@@ -10,6 +10,37 @@ public class TokenAtendimentoRepository(DataContext context) : ITokenAtendimento
 {
     private readonly DataContext _context = context;
 
+    public async Task<TokenAtendimento> GenerateTokenAsync(Cliente? cliente = null, string? cpf = null)
+    {
+        string query = @"
+            INSERT INTO ""TokensAtendimento""
+                (""TokenId"", ""ClienteId"", ""Cpf"", ""CriadoEm"")
+            VALUES
+                (@TokenId, @ClienteId, @Cpf, @CriadoEm)";
+
+        var parameters = new TokenAtendimento()
+        {
+            TokenId = Guid.NewGuid(),
+            ClienteId = cliente?.Id,
+            Cpf = cpf,
+            CriadoEm = DateTime.Now
+        };
+
+        try
+        {
+            await _context.Connection.ExecuteAsync(query, parameters);
+            return parameters;
+        }
+        catch (Exception ex)
+        {
+            throw new SqlTypeException(ex.Message);
+        }
+        finally
+        {
+            _context.DisposeConnection();
+        }
+    }
+
     public async Task<TokenAtendimento?> GetMostRecentTokenByCpfAsync(string cpf)
     {
         string query = @"
@@ -55,4 +86,6 @@ public class TokenAtendimentoRepository(DataContext context) : ITokenAtendimento
             _context.DisposeConnection();
         }
     }
+
+
 }

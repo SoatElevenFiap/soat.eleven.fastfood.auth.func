@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Npgsql;
 using System.Data;
 
@@ -6,13 +7,16 @@ namespace Soat.Eleven.FastFood.Infra.Context;
 
 public class DataContext
 {
-    public DataContext(IConfiguration configuration)
+    public DataContext(IConfiguration configuration, ILogger<DataContext> logger)
     {
+        _logger = logger;
+        
         var connectionString = Environment.GetEnvironmentVariable("AZURE_SQL_CONNECTIONSTRING")
-            ?? configuration.GetConnectionString("AZURE_SQL_CONNECTIONSTRING")
-            ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+            ?? configuration.GetConnectionString("AZURE_SQL_CONNECTIONSTRING");
 
-        Connection = new NpgsqlConnection(connectionString);
+        _logger.LogInformation("Connection string obtida com sucesso - {string}", connectionString ?? "Não encontrado");
+
+        Connection = new NpgsqlConnection(connectionString ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found."));
         OpenConnection();
     }
 
@@ -29,4 +33,5 @@ public class DataContext
     }
 
     public readonly IDbConnection Connection;
+    private readonly ILogger<DataContext> _logger;
 }
