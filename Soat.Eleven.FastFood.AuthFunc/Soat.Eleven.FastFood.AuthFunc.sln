@@ -1,0 +1,37 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36429.23
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Soat.Eleven.FastFood.AuthFunc", "Soat.Eleven.FastFood.AuthFunc.csproj", "{4F18D9EF-3AD7-4C97-A00C-DFD2A8D990D2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Soat.Eleven.FastFood.Infra", "..\Soat.Eleven.FastFood.Infra\Soat.Eleven.FastFood.Infra.csproj", "{8CD086A6-82E1-4E20-8D8F-DC3F819856D3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Soat.Eleven.FastFood.Domain", "..\Soat.Eleven.FastFood.Domain\Soat.Eleven.FastFood.Domain.csproj", "{D783BA07-3319-4F07-802E-5F9FDD37C846}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4F18D9EF-3AD7-4C97-A00C-DFD2A8D990D2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4F18D9EF-3AD7-4C97-A00C-DFD2A8D990D2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4F18D9EF-3AD7-4C97-A00C-DFD2A8D990D2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4F18D9EF-3AD7-4C97-A00C-DFD2A8D990D2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8CD086A6-82E1-4E20-8D8F-DC3F819856D3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8CD086A6-82E1-4E20-8D8F-DC3F819856D3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8CD086A6-82E1-4E20-8D8F-DC3F819856D3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8CD086A6-82E1-4E20-8D8F-DC3F819856D3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D783BA07-3319-4F07-802E-5F9FDD37C846}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D783BA07-3319-4F07-802E-5F9FDD37C846}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D783BA07-3319-4F07-802E-5F9FDD37C846}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D783BA07-3319-4F07-802E-5F9FDD37C846}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {DD9671B3-6BE7-4957-ABE7-396FF9048EB5}
+	EndGlobalSection
+EndGlobal
