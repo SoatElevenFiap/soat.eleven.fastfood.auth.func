@@ -3,19 +3,10 @@ name: Deploy DotNet project to Azure Function App
 on:
   push
 
-# CONFIGURATION
-# 1. Set up the following secrets in your repository:
-#   - AZURE_FUNCTIONAPP_PUBLISH_PROFILE
-#   - POSTGRES_HOST
-#   - POSTGRES_DB
-#   - POSTGRES_USER
-#   - POSTGRES_PASSWORD
-#
-# 2. Ajuste os valores conforme necessário
 env:
-  AZURE_FUNCTIONAPP_NAME: 'fastfood-auth-function'   # nome da Function App no Azure
-  AZURE_FUNCTIONAPP_PACKAGE_PATH: './Soat.Eleven.FastFood.AuthFunc'  # caminho para o projeto
-  DOTNET_VERSION: '8.0.x'  # versão do dotnet
+  AZURE_FUNCTIONAPP_NAME: 'fastfood-auth-function'
+  AZURE_FUNCTIONAPP_PACKAGE_PATH: './Soat.Eleven.FastFood.AuthFunc'
+  DOTNET_VERSION: '8.0.x'
 
 jobs:
   build-and-deploy:
@@ -48,6 +39,11 @@ jobs:
         shell: pwsh
         run: |
           $connectionString = "Host=${{ secrets.POSTGRES_HOST }};Port=5432;Database=${{ secrets.POSTGRES_DB }};Username=${{ secrets.POSTGRES_USER }};Password=${{ secrets.POSTGRES_PASSWORD }};SslMode=Require;TrustServerCertificate=true"
+          
+          # printar no log
+          Write-Host "Connection string gerada: $connectionString"
+          
+          # gravar no ambiente para os próximos steps
           echo "AZURE_SQL_CONNECTIONSTRING=$connectionString" >> $env:GITHUB_ENV
 
       - name: 'Run Azure Functions Action'
@@ -58,4 +54,4 @@ jobs:
           package: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/output'
           publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
         env:
-          AZURE_SQL_CONNECTIONSTRING: ${{ env.AZURE_SQL_CONNECTIONSTRING }}
+          AZURE_SQL_CONNECTIONSTRING: $AZURE_SQL_CONNECTIONSTRING
