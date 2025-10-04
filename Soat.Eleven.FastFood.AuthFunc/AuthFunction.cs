@@ -86,7 +86,7 @@ public class AuthFunction(ILogger<AuthFunction> logger,
         catch (Exception ex)
         {
             _logger.LogError(ex, "Erro ao processar a requisição de autenticação.");
-            throw;
+            throw new Exception("Authentication - Erro ao processar a requisição de autenticação.", ex);
         }
     }
 
@@ -134,7 +134,7 @@ public class AuthFunction(ILogger<AuthFunction> logger,
         catch (Exception ex)
         {
             _logger.LogError(ex, "Erro ao processar a requisição de atendimento.");
-            throw;
+            throw new Exception("AuthenticationAtendimento - Erro ao processar a requisição de autenticação.", ex);
         }
     }
 }
