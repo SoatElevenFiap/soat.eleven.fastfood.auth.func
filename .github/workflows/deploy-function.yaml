@@ -45,7 +45,7 @@ jobs:
     - name: 'Set Database Connection String'
       shell: pwsh
       run: |
-        $connectionString = "Host=${{ secrets.POSTGRES_HOST }};Port=${{ secrets.POSTGRES_PORT }};Database=${{ secrets.POSTGRES_DB }};Username=${{ secrets.POSTGRES_USER }};Password=${{ secrets.POSTGRES_PASSWORD }};SslMode=Require;TrustServerCertificate=true"
+        $connectionString = "Host=${{ secrets.POSTGRES_HOST }};Port=5432;Database=${{ secrets.POSTGRES_DB }};Username=${{ secrets.POSTGRES_USER }};Password=${{ secrets.POSTGRES_PASSWORD }};SslMode=Require;TrustServerCertificate=true"
         echo "AZURE_SQL_CONNECTIONSTRING=$connectionString" >> $env:GITHUB_ENV
 
     - name: 'Run Azure Functions Action'
