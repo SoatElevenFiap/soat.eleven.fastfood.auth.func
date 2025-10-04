@@ -1,61 +1,61 @@
 name: Deploy DotNet project to Azure Function App
 
 on:
-  [push]
+  push
 
 # CONFIGURATION
-# For help, go to https://github.com/Azure/Actions
-#
 # 1. Set up the following secrets in your repository:
-#   AZURE_FUNCTIONAPP_PUBLISH_PROFILE
+#   - AZURE_FUNCTIONAPP_PUBLISH_PROFILE
+#   - POSTGRES_HOST
+#   - POSTGRES_DB
+#   - POSTGRES_USER
+#   - POSTGRES_PASSWORD
 #
-# 2. Change these variables for your configuration:
+# 2. Ajuste os valores conforme necessário
 env:
-  AZURE_FUNCTIONAPP_NAME: 'fastfood-auth-function'   # set this to your function app name on Azure
-  AZURE_FUNCTIONAPP_PACKAGE_PATH: './Soat.Eleven.FastFood.AuthFunc'       # set this to the path to your function app project, defaults to the repository root
-  DOTNET_VERSION: '8.0.x'                   # set this to the dotnet version to use (e.g. '2.1.x', '3.1.x', '5.0.x')
+  AZURE_FUNCTIONAPP_NAME: 'fastfood-auth-function'   # nome da Function App no Azure
+  AZURE_FUNCTIONAPP_PACKAGE_PATH: './Soat.Eleven.FastFood.AuthFunc'  # caminho para o projeto
+  DOTNET_VERSION: '8.0.x'  # versão do dotnet
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     environment: dev
     steps:
-    - name: 'Checkout GitHub Action'
-      uses: actions/checkout@v3
+      - name: 'Checkout GitHub Action'
+        uses: actions/checkout@v3
 
-    - name: Setup DotNet ${{ env.DOTNET_VERSION }} Environment
-      uses: actions/setup-dotnet@v3
-      with:
-        dotnet-version: ${{ env.DOTNET_VERSION }}
-    
-    - name: Restore dependencies
-      shell: pwsh
-      run: |
-        pushd '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
-        dotnet restore
-        popd
+      - name: Setup DotNet ${{ env.DOTNET_VERSION }} Environment
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
 
-    - name: 'Resolve Project Dependencies Using Dotnet'
-      shell: pwsh
-      run: |
-        pushd '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
-        dotnet build --configuration Release --output ./output
-        popd
+      - name: Restore dependencies
+        shell: pwsh
+        run: |
+          pushd '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
+          dotnet restore
+          popd
 
-    - name: 'Set Database Connection String'
-      shell: pwsh
-      run: |
-        $connectionString = "Host=${{ secrets.POSTGRES_HOST }};Port=5432;Database=${{ secrets.POSTGRES_DB }};Username=${{ secrets.POSTGRES_USER }};Password=${{ secrets.POSTGRES_PASSWORD }};SslMode=Require;TrustServerCertificate=true"
-        echo "AZURE_SQL_CONNECTIONSTRING=$connectionString" >> $env:GITHUB_ENV
+      - name: Build project
+        shell: pwsh
+        run: |
+          pushd '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
+          dotnet build --configuration Release --output ./output
+          popd
 
-    - name: 'Run Azure Functions Action'
-      uses: Azure/functions-action@v1
-      id: fa
-      with:
-        app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
-        package: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/output'
-        publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
-      env:
-        AZURE_SQL_CONNECTIONSTRING: ${{ env.AZURE_SQL_CONNECTIONSTRING }}
+      - name: 'Set Database Connection String'
+        shell: pwsh
+        run: |
+          $connectionString = "Host=${{ secrets.POSTGRES_HOST }};Port=5432;Database=${{ secrets.POSTGRES_DB }};Username=${{ secrets.POSTGRES_USER }};Password=${{ secrets.POSTGRES_PASSWORD }};SslMode=Require;TrustServerCertificate=true"
+          echo "AZURE_SQL_CONNECTIONSTRING=$connectionString" >> $env:GITHUB_ENV
 
-# For more samples to get started with GitHub Action workflows to deploy to Azure, refer to https://github.com/Azure/actions-workflow-samples
+      - name: 'Run Azure Functions Action'
+        uses: Azure/functions-action@v1
+        id: fa
+        with:
+          app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
+          package: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/output'
+          publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
+        env:
+          AZURE_SQL_CONNECTIONSTRING: ${{ env.AZURE_SQL_CONNECTIONSTRING }}
