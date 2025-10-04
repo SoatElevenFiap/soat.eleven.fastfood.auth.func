@@ -35,16 +35,34 @@ jobs:
           dotnet build --configuration Release --output ./output
           popd
 
-      - name: 'Set Database Connection String'
+      - name: 'Set and Show Database Connection String'
         shell: pwsh
+        env:
+          HOST: ${{ secrets.POSTGRES_HOST }}
+          DB: ${{ secrets.POSTGRES_DB }}
+          USER: ${{ secrets.POSTGRES_USER }}
+          PASS: ${{ secrets.POSTGRES_PASSWORD }}
         run: |
-          $connectionString = "Host=${{ secrets.POSTGRES_HOST }};Port=5432;Database=${{ secrets.POSTGRES_DB }};Username=${{ secrets.POSTGRES_USER }};Password=${{ secrets.POSTGRES_PASSWORD }};SslMode=Require;TrustServerCertificate=true"
+          $connectionString = "Host=$env:HOST;Port=5432;Database=$env:DB;Username=$env:USER;Password=$env:PASS;SslMode=Require;TrustServerCertificate=true"
           
-          # printar no log
-          Write-Host "Connection string gerada: $connectionString"
+          # ✅ printa a connection string completa sem máscara
+          Write-Host "Connection string gerada (completa): $connectionString"
           
-          # gravar no ambiente para os próximos steps
+          # exporta para os próximos steps
           echo "AZURE_SQL_CONNECTIONSTRING=$connectionString" >> $env:GITHUB_ENV
+
+      - name: 'Test database connection'
+        run: |
+          echo "Instalando psql client..."
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+
+          echo "Testando conexão com banco..."
+          PGPASSWORD=${{ secrets.POSTGRES_PASSWORD }} psql \
+            -h ${{ secrets.POSTGRES_HOST }} \
+            -U ${{ secrets.POSTGRES_USER }} \
+            -d ${{ secrets.POSTGRES_DB }} \
+            -c "SELECT version();"
 
       - name: 'Run Azure Functions Action'
         uses: Azure/functions-action@v1
