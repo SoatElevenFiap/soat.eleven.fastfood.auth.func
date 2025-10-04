@@ -45,8 +45,8 @@ public class TokenAtendimentoRepository(DataContext context) : ITokenAtendimento
     {
         string query = @"
             SELECT *
-            FROM TokenAtendimento
-            WHERE Cpf = @cpf";
+            FROM ""TokenAtendimento""
+            WHERE ""Cpf"" = @cpf";
 
         var parameters = new { cpf };
 
@@ -68,8 +68,8 @@ public class TokenAtendimentoRepository(DataContext context) : ITokenAtendimento
     {
         string query = @"
             SELECT *
-            FROM TokenAtendimento
-            WHERE TokenId = @tokenId";
+            FROM ""TokenAtendimento""
+            WHERE ""TokenId"" = @tokenId";
 
         var parameters = new { tokenId };
 

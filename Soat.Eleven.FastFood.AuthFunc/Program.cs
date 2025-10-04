@@ -1,4 +1,5 @@
 using Microsoft.Azure.Functions.Worker.Builder;
+using Microsoft.Azure.Functions.Worker.Extensions.OpenApi.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Soat.Eleven.FastFood.Domain.Repositories;
@@ -27,3 +28,13 @@ builder.ConfigureFunctionsWebApplication();
 //     .ConfigureFunctionsApplicationInsights();
 
 builder.Build().Run();
+
+var host = new HostBuilder()
+    .ConfigureFunctionsWebApplication() // ou .ConfigureFunctionsWorkerDefaults() para apps não-HTTP
+    .ConfigureServices(services => {
+        // Serviços adicionais aqui, se houver
+    })
+    .ConfigureOpenApi() // <-- Adicione esta linha
+    .Build();
+
+host.Run();

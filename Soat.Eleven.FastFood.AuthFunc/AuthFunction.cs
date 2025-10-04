@@ -1,18 +1,16 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
+using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Enums;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Soat.Eleven.FastFood.Domain.Entities;
+using Microsoft.OpenApi.Models;
 using Soat.Eleven.FastFood.Domain.Repositories;
 using Soat.Eleven.FastFood.Domain.Services;
-using System;
-using System.IO;
-using System.Security.Cryptography;
-using System.Text;
+using System.Net;
 using System.Text.Json;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace Soat.Eleven.FastFood.AuthFunc;
 
@@ -29,6 +27,11 @@ public class AuthFunction(ILogger<AuthFunction> logger,
     private readonly IConfiguration _configuration = configuration;
 
     [Function("Authentication")]
+    [OpenApiOperation(operationId: "LoginUser", tags: new[] { "Autenticação" }, Summary = "Autentica um usuário", Description = "Este endpoint autentica um usuário com base no email e senha fornecidos e retorna um token de acesso.", Visibility = OpenApiVisibilityType.Important)]
+    [OpenApiRequestBody("application/json", typeof(LoginRequest), Description = "Credenciais de acesso do usuário (email e senha).")]
+    [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(string), Summary = "Autenticação bem-sucedida", Description = "Retorna o token de acesso.")]
+    [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.Unauthorized, Summary = "Não autorizado", Description = "As credenciais fornecidas são inválidas.")]
+    [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.BadRequest, Summary = "Requisição inválida", Description = "Os dados enviados estão em um formato inválido.")]
     public async Task<IActionResult> RunAuthentication([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "auth")] HttpRequest req)
     {
         try
@@ -72,7 +75,7 @@ public class AuthFunction(ILogger<AuthFunction> logger,
             if (usuario is null)
             {
                 _logger.LogWarning("Usuário não encontrado para o email: {email}", email);
-                return new NotFoundObjectResult("Usuário não encontrado ou credenciais inválidas.");
+                return new UnauthorizedObjectResult("Usuário não encontrado ou credenciais inválidas.");
             }
 
             // Usuário encontrado, retorna os dados
@@ -88,6 +91,11 @@ public class AuthFunction(ILogger<AuthFunction> logger,
     }
 
     [Function("AuthenticationAtendimento")]
+    [OpenApiOperation(operationId: "LoginGuestOrByCpf", tags: new[] { "Autenticação" }, Summary = "Autentica um usuário anônimo ou por CPF", Description = "Este endpoint gera um token de acesso para um usuário convidado. Opcionalmente, um CPF pode ser fornecido para vincular a sessão a um usuário existente.", Visibility = OpenApiVisibilityType.Important)]
+    [OpenApiParameter(name: "cpf", In = ParameterLocation.Path, Required = false, Type = typeof(string), Summary = "CPF do usuário", Description = "CPF opcional para identificar o usuário. Se não for fornecido, a autenticação será anônima.")]
+    [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(string), Summary = "Autenticação bem-sucedida", Description = "Retorna o token de acesso.")]
+    [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.NotFound, Description = "O CPF fornecido não corresponde a nenhum usuário no sistema.")]
+    [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.BadRequest, Description = "O formato do CPF é inválido.")]
     public async Task<IActionResult> RunAtendimento([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "auth/atendimento/{cpf?}")] HttpRequest req, string? cpf)
     {
         try
