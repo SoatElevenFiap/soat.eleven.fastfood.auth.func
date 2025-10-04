@@ -1,4 +1,5 @@
 using Microsoft.Azure.Functions.Worker.Builder;
+using Microsoft.Azure.Functions.Worker.Extensions.OpenApi.Extensions;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Abstractions;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Configurations;
 using Microsoft.Extensions.DependencyInjection;
@@ -32,7 +33,7 @@ builder.Services.AddSingleton<IOpenApiConfigurationOptions>(_ =>
         Info = new OpenApiInfo()
         {
             Version = "1.0.0",
-            Title = "API de Autenticação",
+            Title = "API de Autenticação - FastFood",
             Description = "API para autenticação de usuários"
         }
     };
@@ -44,24 +45,17 @@ builder.ConfigureFunctionsWebApplication();
 
 Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
-// Application Insights isn't enabled by default. See https://aka.ms/AAt8mw4.
-// builder.Services
-//     .AddApplicationInsightsTelemetryWorkerService()
-//     .ConfigureFunctionsApplicationInsights();
-
 builder.Build().Run();
 
-//var host = new HostBuilder()
-//    .ConfigureFunctionsWebApplication() // ou .ConfigureFunctionsWorkerDefaults() para apps não-HTTP
-//    .ConfigureServices(services =>
-//    {
-//        services.Configure<JsonSerializerOptions>(options =>
-//        {
-//            options.PropertyNameCaseInsensitive = true;
-//            options.Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping;
-//        });
-//    })
-//    .ConfigureOpenApi() // <-- Adicione esta linha
-//    .Build();
+var host = new HostBuilder()
+    .ConfigureFunctionsWorkerDefaults(worker => {
+        // Adicione esta linha
+        worker.UseNewtonsoftJson();
+    })
+    .ConfigureServices(services => {
+        // Seus outros serviços
+    })
+    .ConfigureOpenApi()
+    .Build();
 
-//host.Run();
+host.Run();
